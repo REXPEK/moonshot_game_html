@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cannon Game</title>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+    .controls {
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Cannon Game</h1>
+  <canvas id="gameCanvas" width="600" height="400"></canvas>
+  <div class="controls">
+    <label>Angle: <input type="range" id="angleSlider" min="0" max="90" value="45"> <span id="angleValue">45</span> degrees</label><br>
+    <label>Force: <input type="range" id="forceSlider" min="1" max="40" value="10"> <span id="forceValue">10</span></label><br>
+    <label>Flight Time: <input type="range" id="tFlightSlider" min="0.1" max="10" step="0.1" value="5"> <span id="tFlightValue">5</span> seconds</label><br>
+    <button id="shootButton">Shoot</button>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Initial target position
+    const targetX = 50;
+    const targetY = 2;
+
+    // Event listeners for sliders
+    const angleSlider = document.getElementById("angleSlider");
+    const forceSlider = document.getElementById("forceSlider");
+    const tFlightSlider = document.getElementById("tFlightSlider");
+
+    angleSlider.addEventListener("input", () => {
+      document.getElementById("angleValue").textContent = angleSlider.value;
+    });
+
+    forceSlider.addEventListener("input", () => {
+      document.getElementById("forceValue").textContent = forceSlider.value;
+    });
+
+    tFlightSlider.addEventListener("input", () => {
+      document.getElementById("tFlightValue").textContent = tFlightSlider.value;
+    });
+
+    // Function to calculate the projectile motion
+    function projectileMotion(angle, force, tFlight) {
+      const g = 9.81; // gravity (m/s^2)
+      const angleRad = (Math.PI / 180) * angle;
+
+      // Adjust force to properly reflect initial velocity
+      const vX = force * Math.cos(angleRad);
+      const vY = force * Math.sin(angleRad);
+
+      // Time array based on provided tFlight
+      const timeSteps = 500;
+      const dt = tFlight / timeSteps;
+      const trajectory = [];
+
+      for (let i = 0; i <= timeSteps; i++) {
+        const t = i * dt;
+        const x = vX * t;
+        const y = vY * t - 0.5 * g * t * t;
+        if (y < 0) break; // Stop if projectile hits the ground
+        if (y > 12) break; // Stop if projectile goes above the canvas
+        if (x > 60) break; // Stop if projectile goes beyond the canvas
+        trajectory.push({ x, y });
+      }
+
+      return trajectory;
+    }
+
+    function mapMatplotlibToCanvasX(x) {
+      return canvas.width*(x/60.)
+    }
+
+    function mapMatplotlibToCanvasY(y) {
+      return canvas.height*(y/12.)
+    }
+
+
+    // Function to draw the trajectory
+    function drawTrajectory(trajectory) {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw the target
+      ctx.fillStyle = "red";
+      ctx.beginPath();
+      ctx.arc(mapMatplotlibToCanvasX(targetX), canvas.height - mapMatplotlibToCanvasY(targetY), 5, 0, 2 * Math.PI);
+      ctx.fill();
+
+      // Draw the projectile trajectory
+      ctx.strokeStyle = "blue";
+      ctx.beginPath();
+      ctx.moveTo(0, canvas.height);
+      for (const point of trajectory) {
+        ctx.lineTo(mapMatplotlibToCanvasX(point.x), canvas.height - mapMatplotlibToCanvasY(point.y));
+      }
+      ctx.stroke();
+    }
+
+    // Event listener for the shoot button
+    document.getElementById("shootButton").addEventListener("click", () => {
+      const angle = parseFloat(angleSlider.value);
+      const force = parseFloat(forceSlider.value);
+      const tFlight = parseFloat(tFlightSlider.value);
+
+      const trajectory = projectileMotion(angle, force, tFlight);
+      drawTrajectory(trajectory);
+    });
+  </script>
+</body>
+</html>
