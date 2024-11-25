@@ -17,9 +17,23 @@
     <h1><em>Moonshot</em> virtual use case</h1>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
   <div class="controls">
-    <label>Throw angle: <input type="range" id="angleSlider" min="0" max="90" value="45"> <span id="angleValue">45</span> degrees</label><br>
-    <label>Initial velocity: <input type="range" id="forceSlider" min="1" max="40" value="10"> <span id="forceValue">10</span></label><br>
-    <label>Flight timer: <input type="range" id="tFlightSlider" min="0.1" max="10" step="0.1" value="5"> <span id="tFlightValue">5</span> seconds</label><br>
+    <table>
+      <tr>
+        <td><label>Throw angle:</label></td>
+        <td><input type="range" id="angleSlider" min="0" max="90" value="45"></td>
+        <td><span id="angleValue">45</span> degrees</td>
+      </tr>
+      <tr>
+        <td><label>Initial velocity:</label></td>
+        <td><input type="range" id="forceSlider" min="1" max="40" value="10"></td>
+        <td><span id="forceValue">10</span> m/s</td>
+      </tr>
+      <tr>
+        <td><label>Flight timer:</label></td>
+        <td><input type="range" id="tFlightSlider" min="0.1" max="10" step="0.1" value="5"></td>
+        <td><span id="tFlightValue">5</span> seconds</td>
+      </tr>
+    </table>
     <button id="shootButton">Shoot</button><br/>
     <br/>
     <p>In this game, your task is to hit the middle of the red dot with the endpoint of the blue curve as accurately as possible.</p>
