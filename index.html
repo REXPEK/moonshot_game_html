@@ -7,9 +7,23 @@
   <style>
     canvas {
       border: 1px solid black;
+      width: 100%;
+      height: auto;
+      max-width: 600px;
+      max-height: 400px;
     }
     .controls {
       margin-top: 10px;
+    }
+    body {
+      font-size: 16px; /* Ensure text size remains consistent */
+    }
+    @media (min-aspect-ratio: 1/1) {
+      /*body { background-color: lightgoldenrodyellow; }*/
+      canvas {
+        height: 60vh;
+        width: auto;
+      }
     }
   </style>
 </head>
@@ -38,7 +52,7 @@
     <br/>
     <p>In this game, your task is to hit the middle of the red dot with the endpoint of the blue curve as accurately as possible.</p>
     <p>This game is a companion to the paper: <br />
-    András Retzler, Tom Lefebvre, Guillaume Crevecoeur, "Leveraging human strategy in Bayesian optimization for industrial commissioning", 2024, to be pubished.</p>
+    <em>András Retzler, Tom Lefebvre, Guillaume Crevecoeur, "Leveraging human strategy in Bayesian optimization for industrial commissioning", 2024, to be pubished.</em></p>
   </div>
 
   <script>
