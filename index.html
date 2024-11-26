@@ -25,27 +25,79 @@
         width: auto;
       }
     }
+    .results-container {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+      max-width: 100%;
+      overflow-x: auto;
+    }
+    #shotsTable {
+      height: 300px;
+      overflow-y: auto;
+    }
+    table {
+      border-collapse: collapse;
+    }
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .slider-table {
+  width: 100%;
+  max-width: 600px; /* Sets the maximum width of the table */
+  table-layout: auto; /* Allows the middle column to grow dynamically */
+  border-spacing: 8px; /* Adds spacing between table cells */
+}
+
+.slider-table td {
+  padding: 4px; /* Adds consistent padding */
+}
+
+.slider-table td:nth-child(1),
+.slider-table td:nth-child(3) {
+  width: 20%; /* Ensures fixed width for the first and third columns */
+  white-space: nowrap; /* Prevents text wrapping */
+  text-align: right; /* Aligns text to the right for better readability */
+}
+
+.slider-table td:nth-child(2) {
+  width: auto; /* Allows the middle column to take up remaining space */
+}
+
+.slider-table td:nth-child(2) input {
+  width: 100%; /* Ensures sliders use the full width of the middle column */
+  max-width: 100%; /* Prevents overflowing */
+  box-sizing: border-box; /* Ensures padding is included in width */
+}
+
   </style>
+  <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
 </head>
 <body>
     <h1>🌒 <em>Moonshot</em> virtual use case</h1>
   <canvas id="gameCanvas" width="600" height="400"></canvas>
   <div class="controls">
-    <table>
+    <table class="slider-table">
       <tr>
         <td><label>Throw angle:</label></td>
-        <td><input type="range" id="angleSlider" min="0" max="90" value="45"></td>
-        <td><span id="angleValue">45</span> degrees</td>
+        <td><input type="range" id="angleSlider" min="0" max="90" value="45" step="0.01"></td>
+        <td><span id="angleValue">45.00</span> degrees</td>
       </tr>
       <tr>
         <td><label>Initial velocity:</label></td>
-        <td><input type="range" id="forceSlider" min="1" max="40" value="10"></td>
-        <td><span id="forceValue">10</span> m/s</td>
+        <td><input type="range" id="forceSlider" min="1" max="40" value="10" step="0.01"></td>
+        <td><span id="forceValue">10.00</span> m/s</td>
       </tr>
       <tr>
         <td><label>Flight timer:</label></td>
-        <td><input type="range" id="tFlightSlider" min="0.1" max="10" step="0.1" value="5"></td>
-        <td><span id="tFlightValue">5</span> seconds</td>
+        <td><input type="range" id="tFlightSlider" min="0.1" max="10" step="0.01" value="5"></td>
+        <td><span id="tFlightValue">5.00</span> seconds</td>
       </tr>
     </table>
     <button id="shootButton">Shoot</button><br/>
@@ -53,6 +105,11 @@
     <p>In this game, your task is to hit the middle of the red dot with the endpoint of the blue curve as accurately as possible.</p>
     <p>This game is a companion to the paper: <br />
     <em>András Retzler, Tom Lefebvre, Guillaume Crevecoeur, "Leveraging human strategy in Bayesian optimization for industrial commissioning", 2024, to be pubished.</em></p>
+  </div>
+  <div class="results-container">
+    <div id="plotDiv"></div>
+    <br/>
+    <div id="shotsTable"></div>
   </div>
 
   <script>
@@ -69,15 +126,15 @@
     const tFlightSlider = document.getElementById("tFlightSlider");
 
     angleSlider.addEventListener("input", () => {
-      document.getElementById("angleValue").textContent = angleSlider.value;
+      document.getElementById("angleValue").textContent = Number(angleSlider.value).toFixed(2);
     });
 
     forceSlider.addEventListener("input", () => {
-      document.getElementById("forceValue").textContent = forceSlider.value;
+      document.getElementById("forceValue").textContent = Number(forceSlider.value).toFixed(2);
     });
 
     tFlightSlider.addEventListener("input", () => {
-      document.getElementById("tFlightValue").textContent = tFlightSlider.value;
+      document.getElementById("tFlightValue").textContent = Number(tFlightSlider.value).toFixed(2);
     });
 
     // Function to calculate the projectile motion
@@ -136,7 +193,91 @@
       ctx.stroke();
     }
 
-    // Event listener for the shoot button
+    // Add these variables at the top of your script
+    const shotHistory = [];
+    
+    function updateTable() {
+      const table = document.getElementById('shotsTable');
+      const html = `
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Angle</th>
+                    <th>Force</th>
+                    <th>Time</th>
+                    <th>X Error</th>
+                    <th>Y Error</th>
+                    <th>Distance</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${shotHistory.slice(-10).map((shot, i) => `
+                    <tr>
+                        <td>${shotHistory.length - 9 + i}</td>
+                        <td>${shot.angle.toFixed(1)}°</td>
+                        <td>${shot.force.toFixed(1)}</td>
+                        <td>${shot.tFlight.toFixed(1)}s</td>
+                        <td>${shot.errorX.toFixed(3)}</td>
+                        <td>${shot.errorY.toFixed(3)}</td>
+                        <td>${shot.error.toFixed(3)}</td>
+                    </tr>
+                `).join('')}
+            </tbody>
+        </table>
+      `;
+      table.innerHTML = html;
+    }
+
+    function updatePlot() {
+      const iterations = Array.from({length: shotHistory.length}, (_, i) => i + 1);
+      const errorsX = shotHistory.map(shot => shot.errorX);
+      const errorsY = shotHistory.map(shot => shot.errorY);
+      const errorsTotal = shotHistory.map(shot => shot.error);
+      const cumulativeMin = errorsTotal.map((_, i) => Math.min(...errorsTotal.slice(0, i + 1)));
+
+      const traces = [
+        {
+            x: iterations,
+            y: errorsX,
+            mode: 'lines+markers',
+            name: 'X Error',
+            line: {color: 'blue'}
+        },
+        {
+            x: iterations,
+            y: errorsY,
+            mode: 'lines+markers',
+            name: 'Y Error',
+            line: {color: 'green'}
+        },
+        {
+            x: iterations,
+            y: errorsTotal,
+            mode: 'lines+markers',
+            name: 'Distance',
+            line: {color: 'orange'}
+        },
+        {
+            x: iterations,
+            y: cumulativeMin,
+            mode: 'lines',
+            name: 'Best so far',
+            line: {color: 'red'}
+        }
+      ];
+
+      const layout = {
+        title: 'Optimization Progress',
+        xaxis: {title: 'Iteration'},
+        yaxis: {title: 'Error', type: 'log'},
+        height: 400
+      };
+
+      Plotly.newPlot('plotDiv', traces, layout);
+    }
+
+    // Modify your shoot button event listener
     document.getElementById("shootButton").addEventListener("click", () => {
       const angle = parseFloat(angleSlider.value);
       const force = parseFloat(forceSlider.value);
@@ -144,6 +285,22 @@
 
       const trajectory = projectileMotion(angle, force, tFlight);
       drawTrajectory(trajectory);
+
+      // Calculate error as distance from target
+      const lastPoint = trajectory[trajectory.length - 1];
+      const errorX = Math.abs(lastPoint.x - targetX);
+      const errorY = Math.abs(lastPoint.y - targetY);
+      const error = Math.sqrt(
+        Math.pow(lastPoint.x - targetX, 2) + 
+        Math.pow(lastPoint.y - targetY, 2)
+      );
+
+      // Add to history
+      shotHistory.push({angle, force, tFlight, errorX, errorY, error});
+
+      // Update visualizations
+      updateTable();
+      updatePlot();
     });
   </script>
 </body>
