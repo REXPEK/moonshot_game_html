@@ -229,9 +229,9 @@
                 </tr>
             </thead>
             <tbody>
-                ${shotHistory.slice(-10).map((shot, i) => `
+                ${shotHistory.map((shot, i) => `
                     <tr>
-                        <td>${shotHistory.length - 9 + i}</td>
+                        <td>${i + 1}</td>
                         <td>${shot.angle.toFixed(1)}°</td>
                         <td>${shot.force.toFixed(1)}</td>
                         <td>${shot.tFlight.toFixed(1)}s</td>
