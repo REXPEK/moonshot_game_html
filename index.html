@@ -86,6 +86,7 @@
 
   </style>
   <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
+  <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG"></script>
 </head>
 <body>
     <h1>🌒 <em>Moonshot</em> virtual use case</h1>
@@ -213,9 +214,9 @@
             <thead>
                 <tr>
                     <th>#</th>
-                    <th>Angle</th>
-                    <th>Force</th>
-                    <th>Time</th>
+                    <th>Throw angle</th>
+                    <th>Initial velocity</th>
+                    <th>Flight timer</th>
                     <th>X Error</th>
                     <th>Y Error</th>
                     <th>Distance</th>
@@ -244,47 +245,86 @@
       const errorsX = shotHistory.map(shot => shot.errorX);
       const errorsY = shotHistory.map(shot => shot.errorY);
       const errorsTotal = shotHistory.map(shot => shot.error);
-      const cumulativeMin = errorsTotal.map((_, i) => Math.min(...errorsTotal.slice(0, i + 1)));
+      
+      // Calculate all cumulative minimums
+      const cumulativeMinTotal = errorsTotal.map((_, i) => Math.min(...errorsTotal.slice(0, i + 1)));
+      const cumulativeMinX = errorsX.map((_, i) => Math.min(...errorsX.slice(0, i + 1)));
+      const cumulativeMinY = errorsY.map((_, i) => Math.min(...errorsY.slice(0, i + 1)));
 
       const traces = [
         {
             x: iterations,
+            y: errorsTotal,
+            mode: 'lines+markers',
+            name: '$e_t = \\sqrt{e_x^2 +e_y^2} \\text{ (objective)}$',
+            line: {color: 'yellow'}
+        },
+        {
+            x: iterations,
             y: errorsX,
             mode: 'lines+markers',
-            name: 'X Error',
-            line: {color: 'blue'}
+            name: '$e_x \\text{ (abs.val.diff. in X direction)}$',
+            line: {color: 'gold'}
         },
         {
             x: iterations,
             y: errorsY,
             mode: 'lines+markers',
-            name: 'Y Error',
-            line: {color: 'green'}
-        },
-        {
-            x: iterations,
-            y: errorsTotal,
-            mode: 'lines+markers',
-            name: 'Distance',
+            name: '$e_y \\text{ (abs.val.diff. in Y direction)}$',
             line: {color: 'orange'}
         },
         {
             x: iterations,
-            y: cumulativeMin,
+            y: cumulativeMinTotal,
             mode: 'lines',
-            name: 'Best so far',
+            name: '$\\text{Cumulative minimum of }e_t$',
+            line: {color: 'blue'}
+        },
+        {
+            x: iterations,
+            y: cumulativeMinX,
+            mode: 'lines',
+            name: '$\\text{Cumulative minimum of }e_x$',
+            line: {color: 'green'}
+        },
+        {
+            x: iterations,
+            y: cumulativeMinY,
+            mode: 'lines',
+            name: '$\\text{Cumulative minimum of }e_y$',
             line: {color: 'red'}
         }
       ];
 
       const layout = {
         title: 'Optimization Progress',
-        xaxis: {title: 'Iteration'},
-        yaxis: {title: 'Error', type: 'log'},
-        height: 400
+        xaxis: {
+          title: 'Iteration',
+          dtick: 1  // This sets major ticks at interval of 1
+        },
+        yaxis: {
+          title: 'Objective value',
+          type: 'log'
+        },
+        height: 400,
+        showlegend: true,
+        legend: {
+          x: 1,
+          xanchor: 'right',
+          y: 1
+        },
+        grid: {rows: 1, columns: 1},
+        paper_bgcolor: 'white',
+        plot_bgcolor: 'white',
+        annotations: []
       };
 
-      Plotly.newPlot('plotDiv', traces, layout);
+      const config = {
+        displayModeBar: false,
+        responsive: true
+      };
+
+      Plotly.newPlot('plotDiv', traces, layout, config);
     }
 
     // Modify your shoot button event listener
