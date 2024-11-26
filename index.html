@@ -122,6 +122,8 @@
     <p>In this game, your task is to hit the middle of the red dot with the endpoint of the blue curve as accurately as possible.</p>
     <p>This game is a companion to a paper on Bayesian optimization: <br />
     <em>András Retzler, Tom Lefebvre, Guillaume Crevecoeur, "Leveraging human strategy in Bayesian optimization for industrial commissioning", 2024, to be pubished.</em></p>
+    <br/>
+    <label><input type="checkbox" id="toggleLegend" checked> Show legend in plot</label>
   </div>
   <div class="results-container">
     <div id="plotDiv"></div>
@@ -313,11 +315,13 @@
           type: 'log'
         },
         height: 400,
-        showlegend: true,
+        showlegend: document.getElementById('toggleLegend').checked,
         legend: {
           x: 1,
           xanchor: 'right',
-          y: 1
+          y: 1,
+          bordercolor: 'black',
+          borderwidth: 1
         },
         grid: {rows: 1, columns: 1},
         paper_bgcolor: 'white',
@@ -332,6 +336,9 @@
 
       Plotly.newPlot('plotDiv', traces, layout, config);
     }
+
+    // Add event listener for the legend toggle
+    document.getElementById('toggleLegend').addEventListener('change', updatePlot);
 
     // Modify your shoot button event listener
     document.getElementById("shootButton").addEventListener("click", () => {
