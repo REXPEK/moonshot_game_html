@@ -50,30 +50,38 @@
     }
     .slider-table {
   width: 100%;
-  max-width: 600px; /* Sets the maximum width of the table */
-  table-layout: auto; /* Allows the middle column to grow dynamically */
-  border-spacing: 8px; /* Adds spacing between table cells */
+  max-width: 600px;
+  table-layout: auto;
+  border-spacing: 8px;
 }
 
 .slider-table td {
-  padding: 4px; /* Adds consistent padding */
+  padding: 4px;
+  border: none; /* Remove borders from table cells */
 }
 
 .slider-table td:nth-child(1),
 .slider-table td:nth-child(3) {
-  width: 20%; /* Ensures fixed width for the first and third columns */
-  white-space: nowrap; /* Prevents text wrapping */
-  text-align: right; /* Aligns text to the right for better readability */
+  width: 20%;
+  white-space: nowrap;
+  text-align: right;
 }
 
 .slider-table td:nth-child(2) {
-  width: auto; /* Allows the middle column to take up remaining space */
+  width: auto;
 }
 
 .slider-table td:nth-child(2) input {
-  width: 100%; /* Ensures sliders use the full width of the middle column */
-  max-width: 100%; /* Prevents overflowing */
-  box-sizing: border-box; /* Ensures padding is included in width */
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+#shootButton {
+  width: 100%;
+  padding: 4px;
+  box-sizing: border-box;
+  height: 100%;
 }
 
   </style>
@@ -99,11 +107,13 @@
         <td><input type="range" id="tFlightSlider" min="0.1" max="10" step="0.01" value="5"></td>
         <td><span id="tFlightValue">5.00</span> seconds</td>
       </tr>
+      <tr>
+        <td colspan="3"><button id="shootButton">Shoot</button></td>
+      </tr>
     </table>
-    <button id="shootButton">Shoot</button><br/>
     <br/>
     <p>In this game, your task is to hit the middle of the red dot with the endpoint of the blue curve as accurately as possible.</p>
-    <p>This game is a companion to the paper: <br />
+    <p>This game is a companion to a paper on Bayesian optimization: <br />
     <em>András Retzler, Tom Lefebvre, Guillaume Crevecoeur, "Leveraging human strategy in Bayesian optimization for industrial commissioning", 2024, to be pubished.</em></p>
   </div>
   <div class="results-container">
