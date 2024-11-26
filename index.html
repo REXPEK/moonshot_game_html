@@ -84,6 +84,12 @@
   height: 100%;
 }
 
+#results_table th img {
+  position: relative;
+  top: 4px;
+  height: 1em;
+}
+
   </style>
   <script src="https://cdn.plot.ly/plotly-2.24.1.min.js"></script>
   <script src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_SVG"></script>
@@ -210,16 +216,16 @@
     function updateTable() {
       const table = document.getElementById('shotsTable');
       const html = `
-        <table>
+        <table id="results_table">
             <thead>
                 <tr>
                     <th>#</th>
                     <th>Throw angle</th>
                     <th>Initial velocity</th>
                     <th>Flight timer</th>
-                    <th>X Error</th>
-                    <th>Y Error</th>
-                    <th>Distance</th>
+                    <th><img src="figs/e_x.svg"></th>
+                    <th><img src="figs/e_y.svg"></th>
+                    <th><img src="figs/e_t.svg"> (objective)</th>
                 </tr>
             </thead>
             <tbody>
